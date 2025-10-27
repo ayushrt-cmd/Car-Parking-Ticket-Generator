@@ -1,0 +1,144 @@
+#include <stdio.h>
+#include <string.h>
+
+// ===================== CONSTANTS =====================
+#define PARK_CAPACITY 3     // Maximum number of cars that can be parked
+#define WAIT_CAPACITY 2     // Maximum number of cars allowed in waiting list
+
+// ===================== MAIN FUNCTION =====================
+int main() {
+    // Arrays to store car numbers in parking and waiting lists
+    char parking[PARK_CAPACITY][20];
+    char waiting[WAIT_CAPACITY][20];
+
+    int parkCount = 0;   // Number of cars currently parked
+    int waitCount = 0;   // Number of cars currently waiting
+    int choice;          // User's menu choice
+    char car[20];        // Temporary variable for car input
+
+    // Infinite loop for the menu-driven program
+    while (1) {
+        // Display the menu
+        printf("\n========== Parking Management System ==========\n");
+        printf("1. Park a Car\n");
+        printf("2. Remove a Car\n");
+        printf("3. Display Parking Status\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        // ============ OPTION 1: PARK A CAR ============
+        if (choice == 1) {
+            printf("Enter Car Number: ");
+            scanf("%s", car);
+
+            // Check if car already exists
+            int found = 0;
+            for (int i = 0; i < parkCount; i++)
+                if (strcmp(parking[i], car) == 0)
+                    found = 1;
+            for (int i = 0; i < waitCount; i++)
+                if (strcmp(waiting[i], car) == 0)
+                    found = 1;
+
+            if (found) {
+                printf("⚠️ Car %s already exists in the system.\n", car);
+                continue;
+            }
+
+            // Park the car or move to waiting list
+            if (parkCount < PARK_CAPACITY) {
+                strcpy(parking[parkCount++], car);
+                printf("✅ Car %s parked successfully.\n", car);
+            } else if (waitCount < WAIT_CAPACITY) {
+                strcpy(waiting[waitCount++], car);
+                printf("ℹ️ Parking full. Car %s added to waiting list.\n", car);
+            } else {
+                printf("❌ Parking and waiting list both full!\n");
+            }
+        }
+
+        // ============ OPTION 2: REMOVE A CAR ============
+        else if (choice == 2) {
+            printf("Enter Car Number to remove: ");
+            scanf("%s", car);
+            int found = 0;
+
+            // Try removing from parking area
+            for (int i = 0; i < parkCount; i++) {
+                if (strcmp(parking[i], car) == 0) {
+                    found = 1;
+
+                    // Shift remaining cars forward
+                    for (int j = i; j < parkCount - 1; j++)
+                        strcpy(parking[j], parking[j + 1]);
+                    parkCount--;
+
+                    printf("🅿️ Car %s removed from parking.\n", car);
+
+                    // Move first waiting car into parking, if any
+                    if (waitCount > 0) {
+                        strcpy(parking[parkCount++], waiting[0]);
+                        for (int k = 0; k < waitCount - 1; k++)
+                            strcpy(waiting[k], waiting[k + 1]);
+                        waitCount--;
+                        printf("🚗 Car %s moved from waiting to parking.\n",
+                               parking[parkCount - 1]);
+                    }
+                    break;
+                }
+            }
+
+            // Try removing from waiting list if not found in parking
+            if (!found) {
+                for (int i = 0; i < waitCount; i++) {
+                    if (strcmp(waiting[i], car) == 0) {
+                        found = 1;
+                        for (int j = i; j < waitCount - 1; j++)
+                            strcpy(waiting[j], waiting[j + 1]);
+                        waitCount--;
+                        printf("🕓 Car %s removed from waiting list.\n", car);
+                        break;
+                    }
+                }
+            }
+
+            if (!found)
+                printf("❌ Car %s not found in system.\n", car);
+        }
+
+        // ============ OPTION 3: DISPLAY STATUS ============
+        else if (choice == 3) {
+            printf("\n------ Current Parking Status ------\n");
+
+            printf("Parking Slots: ");
+            if (parkCount == 0)
+                printf("Empty");
+            else
+                for (int i = 0; i < parkCount; i++)
+                    printf("%s ", parking[i]);
+
+            printf("\nWaiting List: ");
+            if (waitCount == 0)
+                printf("Empty");
+            else
+                for (int i = 0; i < waitCount; i++)
+                    printf("%s ", waiting[i]);
+
+            printf("\nAvailable Parking Slots: %d\n", PARK_CAPACITY - parkCount);
+        }
+
+        // ============ OPTION 4: EXIT ============
+        else if (choice == 4) {
+            printf("👋 Exiting program... Thank you!\n");
+            break;
+        }
+
+        // ============ INVALID CHOICE ============
+        else {
+            printf("⚠️ Invalid choice! Please try again.\n");
+        }
+    }
+
+    return 0;
+}
